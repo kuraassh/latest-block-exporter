@@ -1,98 +1,86 @@
 import express from 'express'
-
 import axios from "axios";
+import { RPCManager } from './rpc';
+import { RouterFactory } from './roter';
+import { Formatter } from './formatter';
+import { AnyBlockchainMetricsManager } from './blockchains/blockchain';
 
 const app = express()
 
-type CeloReponse = {
-    data: {
-        latestBlock: number
-    }
+const formatter = new Formatter()
+const routerFactory = new RouterFactory()
+
+function createAvalancheRouter() {
+    // Read env variables
+    const avalancheRPCManager = new RPCManager(process.env.AVALANCHE_RPC);
+    const avalancheLatestRPCManager = new RPCManager("https://1rpc.io/avax/c");
+    const avalancheManager = new AnyBlockchainMetricsManager(avalancheRPCManager, formatter, "avalanche", avalancheLatestRPCManager);
+    const avalancheRouter = routerFactory.make(avalancheManager);
+    return avalancheRouter;
 }
 
-type OptimismResponse = {
-    result: string
+function createOptimismRouter() {
+    const optimismRPCManager = new RPCManager(process.env.OPTIMISM_RPC);
+    const optimismLatestRPCManager = new RPCManager("https://1rpc.io/op");
+    const optimismManager = new AnyBlockchainMetricsManager(optimismRPCManager, formatter, "optimism", optimismLatestRPCManager);
+    const optimismRouter = routerFactory.make(optimismManager);
+    return optimismRouter;
 }
 
-type ArbitrumResponse = {
-    result: string
+function createArbitrumNitroRouter() {
+    const arbitrumRPCManager = new RPCManager(process.env.ARBITRUM_NITRO_RPC);
+    const arbitrumLatestRPCManager = new RPCManager("https://arb1.arbitrum.io/rpc");
+    const arbitrumManager = new AnyBlockchainMetricsManager(arbitrumRPCManager, formatter, "arbitrum_nitro", arbitrumLatestRPCManager);
+    const arbitrumRouter = routerFactory.make(arbitrumManager);
+    return arbitrumRouter;
 }
 
-function prometheusFormat(name: string, blockchain: string, number: number) {
-    return `#TYPE ${name} gauge\n${name}{blockchain="${blockchain}"} ${number}`
+function createCeloRouter() {
+    const celoRPCManager = new RPCManager(process.env.CELO_RPC);
+    const celoLatestRPCManager = new RPCManager("https://forno.celo.org");
+    const celoManager = new AnyBlockchainMetricsManager(celoRPCManager, formatter, "celo", celoLatestRPCManager);
+    const celoRouter = routerFactory.make(celoManager);
+    return celoRouter;
 }
 
-function formatCeloResponse(response: CeloReponse) {
-    const latestBlock = response.data.latestBlock
-    return prometheusFormat("latest_block", "celo", latestBlock)
+function createPolygonRouter() {
+    const polygonRPCManager = new RPCManager(process.env.POLYGON_RPC)
+    const polygonLatestRPCManager = new RPCManager("https://polygon-mainnet.public.blastapi.io")
+    const polygonManager = new AnyBlockchainMetricsManager(polygonRPCManager, formatter, "polygon", polygonLatestRPCManager);
+    const polygonRouter = routerFactory.make(polygonManager);
+    return polygonRouter;
 }
 
-function formatArbitrumResponse(response: ArbitrumResponse) {
-    const latestBlockStr = response.result
-
-    // Parse hex string to number
-    const latestBlock = parseInt(latestBlockStr, 16)
-    return prometheusFormat("latest_block", "arbitrum", latestBlock)
+function createGnosisRouter() {
+    const gnosisRPCManager = new RPCManager(process.env.GNOSIS_RPC);
+    const gnosisLatestRPCManager = new RPCManager("https://gnosis-mainnet.public.blastapi.io");
+    const gnosisManager = new AnyBlockchainMetricsManager(gnosisRPCManager, formatter, "gnosis", gnosisLatestRPCManager);
+    const gnosisRouter = routerFactory.make(gnosisManager);
+    return gnosisRouter;
 }
 
-function formatOptimismResponse(response: OptimismResponse) {
-    const latestBlockStr = response.result
+// Gnosis
+const gnosisRouter = createGnosisRouter();
+app.use('/gnosis', gnosisRouter)
 
-    // Parse hex string to number
-    const latestBlock = parseInt(latestBlockStr, 16)
-    return prometheusFormat("latest_block", "optimism", latestBlock)
-}
+// Polygon
+const polygonRouter = createPolygonRouter();
+app.use('/polygon', polygonRouter)
 
-app.get('/celo', async (req, res) => {
-    const url = "https://explorer.celo.org/mainnet/graphiql"
-    const body = {"query": "query{latestBlock}", "variables": {}}
+// Celo
+const celoRouter = createCeloRouter();
+app.use('/celo', celoRouter)
 
-    // Send POST request with body
-    const response = await axios.post(url, body)
+// Optimism
+const optimismRouter = createOptimismRouter();
+app.use('/optimism', optimismRouter)
 
-    // Get response
-    const data = response.data as CeloReponse
+// Arbitrum Nitro
+const arbitrumRouter = createArbitrumNitroRouter();
+app.use('/arbitrum-nitro', arbitrumRouter)
 
-    // Format response
-    const formattedResponse = formatCeloResponse(data)
-
-    // Send response
-    res.send(formattedResponse)
-})
-
-app.get('/optimism', async (req, res) => {
-    const url = "https://api-optimistic.etherscan.io/api?module=proxy&action=eth_blockNumber"
-    
-    // Send GET request
-    const response = await axios.get(url)
-
-    // Get response
-    const data = response.data as OptimismResponse
-
-    // Format response
-    const formattedResponse = formatOptimismResponse(data)
-
-    // Send response
-    res.send(formattedResponse)
-})
-
-app.get('/arbitrum', async (req, res) => {
-    const url = "https://arbitrum.public-rpc.com"
-    const body = {"jsonrpc": "2.0", "method": "eth_blockNumber", "params": [], "id": 1}
-    
-    // Send POSt request
-    const response = await axios.post(url, body)
-
-    // Get response
-    const data = response.data as ArbitrumResponse
-
-    // Format response
-    const formattedResponse = formatArbitrumResponse(data)
-
-    // Send response
-    res.send(formattedResponse)
-})
-
-
+// Avalanche
+const avalancheRouter = createAvalancheRouter();
+app.use('/avalanche', avalancheRouter)
 
 app.listen(8081)
