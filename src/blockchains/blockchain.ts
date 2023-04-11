@@ -7,13 +7,14 @@ export interface BlockchainMetricsManager {
 }
 
 export class AnyBlockchainMetricsManager implements BlockchainMetricsManager {
-    protected rpcManager: RPCManager
+    protected rpcManagers: RPCManager[]
+
     protected latestRPCManager: RPCManager
     protected formatter: Formatter
     protected blockchainName: string
 
-    constructor(rpcManager: RPCManager, formatter: Formatter, blockchainName: string, latestRPCManager: RPCManager) {
-        this.rpcManager = rpcManager
+    constructor(rpcManagers: RPCManager[], formatter: Formatter, blockchainName: string, latestRPCManager: RPCManager) {
+        this.rpcManagers = rpcManagers
         this.formatter = formatter
 
         this.latestRPCManager = latestRPCManager
@@ -26,9 +27,26 @@ export class AnyBlockchainMetricsManager implements BlockchainMetricsManager {
         return formattedResponse
     }
 
-    async getCurrentBlockMetrics(): Promise<string> {
-        const currentBlock = await this.rpcManager.fetchBlockFromRPC()
-        const formattedResponse = this.formatter.formatCurrent(this.blockchainName, currentBlock)
+    private async getCurrentBlockMetricsForRPC(rpc: RPCManager): Promise<string> {
+        const currentBlock = await rpc.fetchBlockFromRPC()
+        const rpcHostname = rpc.rpcHostname
+
+        const formattedResponse = this.formatter.formatCurrent(this.blockchainName, currentBlock, rpcHostname)
         return formattedResponse
+    }
+
+    async getCurrentBlockMetrics(): Promise<string> {
+        const results: string[] = []
+
+        for (const rpc of this.rpcManagers) {
+            try {
+                const response = await this.getCurrentBlockMetricsForRPC(rpc)
+                results.push(response)
+            } catch (e) {
+                console.log(e)
+            }
+        }
+
+        return results.join("\n")
     }
 }

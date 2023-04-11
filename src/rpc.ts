@@ -13,6 +13,15 @@ export class RPCManager {
         this.rpc = rpc
     }
 
+    get rpcHostname(): string {
+        if (!this.rpc) {
+            throw new Error("RPC URL is undefined")
+        }
+
+        const url = new URL(this.rpc)
+        return url.hostname
+    }
+
     async fetchBlockFromRPC(): Promise<number> {
         // Throw if RPC URL is undefined or null or empty string
         if (!this.rpc) {

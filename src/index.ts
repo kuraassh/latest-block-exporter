@@ -15,9 +15,19 @@ const app = express()
 const formatter = new Formatter()
 const routerFactory = new RouterFactory()
 
+function getRPCManagers(env: string | undefined): RPCManager[] {
+    if (!env) {
+        return []
+    }
+
+    // Remove spaces and split
+    const rpcs = env.replace(/\s/g, "").split(",")
+    const rpcManagers = rpcs.map(rpc => new RPCManager(rpc))
+    return rpcManagers
+}
+
 function createAvalancheRouter() {
-    // Read env variables
-    const avalancheRPCManager = new RPCManager(process.env.AVALANCHE_RPC);
+    const avalancheRPCManager = getRPCManagers(process.env.AVALANCHE_RPC);
     const avalancheLatestRPCManager = new RPCManager("https://1rpc.io/avax/c");
     const avalancheManager = new AnyBlockchainMetricsManager(avalancheRPCManager, formatter, "avalanche", avalancheLatestRPCManager);
     const avalancheRouter = routerFactory.make(avalancheManager);
@@ -25,7 +35,7 @@ function createAvalancheRouter() {
 }
 
 function createOptimismRouter() {
-    const optimismRPCManager = new RPCManager(process.env.OPTIMISM_RPC);
+    const optimismRPCManager = getRPCManagers(process.env.OPTIMISM_RPC);
     const optimismLatestRPCManager = new RPCManager("https://1rpc.io/op");
     const optimismManager = new AnyBlockchainMetricsManager(optimismRPCManager, formatter, "optimism", optimismLatestRPCManager);
     const optimismRouter = routerFactory.make(optimismManager);
@@ -33,7 +43,7 @@ function createOptimismRouter() {
 }
 
 function createArbitrumNitroRouter() {
-    const arbitrumRPCManager = new RPCManager(process.env.ARBITRUM_NITRO_RPC);
+    const arbitrumRPCManager = getRPCManagers(process.env.ARBITRUM_NITRO_RPC);
     const arbitrumLatestRPCManager = new RPCManager("https://arb1.arbitrum.io/rpc");
     const arbitrumManager = new AnyBlockchainMetricsManager(arbitrumRPCManager, formatter, "arbitrum_nitro", arbitrumLatestRPCManager);
     const arbitrumRouter = routerFactory.make(arbitrumManager);
@@ -41,7 +51,7 @@ function createArbitrumNitroRouter() {
 }
 
 function createCeloRouter() {
-    const celoRPCManager = new RPCManager(process.env.CELO_RPC);
+    const celoRPCManager = getRPCManagers(process.env.CELO_RPC);
     const celoLatestRPCManager = new RPCManager("https://forno.celo.org");
     const celoManager = new AnyBlockchainMetricsManager(celoRPCManager, formatter, "celo", celoLatestRPCManager);
     const celoRouter = routerFactory.make(celoManager);
@@ -49,7 +59,7 @@ function createCeloRouter() {
 }
 
 function createPolygonRouter() {
-    const polygonRPCManager = new RPCManager(process.env.POLYGON_RPC)
+    const polygonRPCManager = getRPCManagers(process.env.POLYGON_RPC)
     const polygonLatestRPCManager = new RPCManager("https://polygon-mainnet.public.blastapi.io")
     const polygonManager = new AnyBlockchainMetricsManager(polygonRPCManager, formatter, "polygon", polygonLatestRPCManager);
     const polygonRouter = routerFactory.make(polygonManager);
@@ -57,7 +67,7 @@ function createPolygonRouter() {
 }
 
 function createGnosisRouter() {
-    const gnosisRPCManager = new RPCManager(process.env.GNOSIS_RPC);
+    const gnosisRPCManager = getRPCManagers(process.env.GNOSIS_RPC);
     const gnosisLatestRPCManager = new RPCManager("https://gnosis-mainnet.public.blastapi.io");
     const gnosisManager = new AnyBlockchainMetricsManager(gnosisRPCManager, formatter, "gnosis", gnosisLatestRPCManager);
     const gnosisRouter = routerFactory.make(gnosisManager);
