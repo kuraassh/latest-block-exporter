@@ -26,6 +26,14 @@ function getRPCManagers(env: string | undefined): RPCManager[] {
     return rpcManagers
 }
 
+function createFantomRouter() {
+    const fantomRPCManager = getRPCManagers(process.env.FANTOM_RPC);
+    const fantomLatestRPCManager = new RPCManager("https://rpc3.fantom.network");
+    const fantomManager = new AnyBlockchainMetricsManager(fantomRPCManager, formatter, "fantom", fantomLatestRPCManager);
+    const fantomRouter = routerFactory.make(fantomManager);
+    return fantomRouter;
+}
+
 function createAvalancheRouter() {
     const avalancheRPCManager = getRPCManagers(process.env.AVALANCHE_RPC);
     const avalancheLatestRPCManager = new RPCManager("https://1rpc.io/avax/c");
@@ -97,6 +105,10 @@ app.use('/arbitrum-nitro', arbitrumRouter)
 // Avalanche
 const avalancheRouter = createAvalancheRouter();
 app.use('/avalanche', avalancheRouter)
+
+// Fantom
+const fantomRouter = createFantomRouter();
+app.use('/fantom', fantomRouter)
 
 const graphManager = new GraphManager(
     new SubgraphManager("https://api.thegraph.com/subgraphs/name/graphprotocol/graph-network-mainnet"),
