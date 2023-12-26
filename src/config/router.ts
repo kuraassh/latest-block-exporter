@@ -29,7 +29,7 @@ export class ConfigRouterFactory {
     private createBalanceConfig(): ConfigEntry[] {
         return [
             this.createBalanceConfigEntry("eth-mainnet", 0.1),
-            this.createBalanceConfigEntry("eth-goerli", 0.5),
+            this.createBalanceConfigEntry("eth-arbitrum", 0.1),
         ]
     }
 
@@ -40,7 +40,7 @@ export class ConfigRouterFactory {
     private createAllocationConfig(): ConfigEntry[] {
         return [
             this.createAllocationConfigEntry("eth-mainnet", 28),
-            this.createAllocationConfigEntry("eth-goerli", 4),
+            this.createAllocationConfigEntry("eth-arbitrum", 28),
         ]
     }
 

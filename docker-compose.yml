@@ -1,0 +1,34 @@
+version: '3.7'
+
+x-logging:
+  &default-logging
+  options:
+    max-file: '1'
+    compress: 'false'
+  driver: local
+
+networks:
+  monitor-net:
+    driver: bridge
+
+services:
+
+######################################################################################
+#####################              Block Fetcher               #######################
+######################################################################################
+
+
+
+  blockexporter:
+    image: haritowa/latest-block-exporter:1.3.2
+    container_name: blockexporter
+    restart: unless-stopped
+    env_file:
+      - .env
+    expose:
+      - 8081
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+    logging: *default-logging

@@ -21,19 +21,19 @@ export class ConcreteNetworkWalletFetcher {
 
 export class WalletFetcher {
   private ethMainnetFetcher: ConcreteNetworkWalletFetcher;
-  private ethGoerliFetcher: ConcreteNetworkWalletFetcher;
+  private arbMainnetFetcher: ConcreteNetworkWalletFetcher;
 
   constructor() {
     this.ethMainnetFetcher = new ConcreteNetworkWalletFetcher('https://eth.rpc.blxrbdn.com');
-    this.ethGoerliFetcher = new ConcreteNetworkWalletFetcher('https://eth-goerli.public.blastapi.io');
+    this.arbMainnetFetcher = new ConcreteNetworkWalletFetcher('https://arbitrum-one.public.blastapi.io');
   }
 
   private getFetcher(network: Network): ConcreteNetworkWalletFetcher {
     switch (network) {
       case 'eth-mainnet':
         return this.ethMainnetFetcher;
-      case 'eth-goerli':
-        return this.ethGoerliFetcher;
+      case 'eth-arbitrum':
+        return this.arbMainnetFetcher;
       default:
         throw new Error('Invalid network');
     }

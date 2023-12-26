@@ -1,1 +1,1 @@
-type Network = "eth-mainnet" | "eth-goerli"
+type Network = "eth-mainnet" | "eth-arbitrum"

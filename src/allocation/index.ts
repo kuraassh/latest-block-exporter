@@ -76,19 +76,19 @@ export class SubgraphManager {
 
 export class GraphManager {
     private ethMainnetSubgraphManager: SubgraphManager
-    private ethGoerliSubgraphManager: SubgraphManager
+    private arbMainnetSubgraphManager: SubgraphManager
 
-    constructor(ethMainnetSubgraphManager: SubgraphManager, ethGoerliSubgraphManager: SubgraphManager) {
+    constructor(ethMainnetSubgraphManager: SubgraphManager, arbMainnetSubgraphManager: SubgraphManager) {
         this.ethMainnetSubgraphManager = ethMainnetSubgraphManager
-        this.ethGoerliSubgraphManager = ethGoerliSubgraphManager
+        this.arbMainnetSubgraphManager = arbMainnetSubgraphManager
     }
 
     private getManager(network: Network): SubgraphManager {
         switch (network) {
             case "eth-mainnet":
                 return this.ethMainnetSubgraphManager;
-            case "eth-goerli":
-                return this.ethGoerliSubgraphManager;
+            case "eth-arbitrum":
+                return this.arbMainnetSubgraphManager;
             default:
                 throw new Error("Invalid network");
         }
